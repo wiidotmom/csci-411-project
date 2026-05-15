@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <climits>
 #include <cmath>
+#include <cstdlib>
+#include <ctime>
 using namespace std;
 
 #include <SDL3/SDL.h>
@@ -107,7 +109,7 @@ public:
     Boid(float x, float y)
     {
         position = new Vec2(x, y);
-        velocity = new Vec2(1, 1);
+        velocity = new Vec2(1 - (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)), 1 - (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)));
         id = NEXT_ID;
         NEXT_ID++;
     }
@@ -118,6 +120,9 @@ public:
         SDL_RenderLine(renderer, position->x, position->y, position->x + velocity->x, position->y + velocity->y);
     }
 
+    /**
+     * Try to keep the boid within the bounds of the window.
+     */
     void keepInScreen()
     {
         if (position->x < 0)
@@ -130,6 +135,9 @@ public:
             velocity->y = -4;
     }
 
+    /**
+     * Encourage the boid to fly towards the average center position of local boids.
+     */
     void flyTowardsCenter(vector<Boid *> boids)
     {
         Vec2 *c = new Vec2(0, 0);
@@ -151,6 +159,9 @@ public:
         }
     }
 
+    /**
+     * Encourage the boid to keep a minimum distance from other boids.
+     */
     void keepDistance(vector<Boid *> boids)
     {
         Vec2 *c = new Vec2(0, 0);
@@ -168,6 +179,9 @@ public:
         velocity->add(c);
     }
 
+    /**
+     * Encourage the boid to match the velocity of local boids.
+     */
     void matchVelocity(vector<Boid *> boids)
     {
         Vec2 *v = new Vec2(0, 0);
@@ -189,6 +203,9 @@ public:
         }
     }
 
+    /**
+     * Limit the magnitude of the boid's velocity.
+     */
     void limitVelocity()
     {
         float mag = velocity->mag();
@@ -213,6 +230,8 @@ public:
 
 int main()
 {
+    srand(static_cast<unsigned>(time(0)));
+
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
         return 1;
@@ -246,8 +265,6 @@ int main()
     bool running = true;
 
     vector<Boid *> boids;
-    boids.push_back(new Boid(WIDTH / 2, HEIGHT / 2));
-    boids.push_back(new Boid((WIDTH / 2) + 10, (HEIGHT / 2) + 10));
 
     while (running)
     {

@@ -98,6 +98,7 @@ public:
 class Boid
 {
     static inline int NEXT_ID;
+    static inline const float LOCAL_RANGE = 40;
 
 public:
     Vec2 *position;
@@ -114,7 +115,6 @@ public:
     void draw(SDL_Renderer *renderer)
     {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-        // SDL_RenderPoint(renderer, position->x, position->y);
         SDL_RenderLine(renderer, position->x, position->y, position->x + velocity->x, position->y + velocity->y);
     }
 
@@ -133,17 +133,22 @@ public:
     void flyTowardsCenter(vector<Boid *> boids)
     {
         Vec2 *c = new Vec2(0, 0);
+        int n = 0;
         for (Boid *other : boids)
         {
-            if (other->id != id)
+            if (other->id != id && position->dist(other->position) <= LOCAL_RANGE)
             {
                 c->add(other->position);
+                n++;
             }
         }
-        c->div(boids.size() - 1);
-        c->sub(position);
-        c->div(100);
-        velocity->add(c);
+        if (n != 0)
+        {
+            c->div(n);
+            c->sub(position);
+            c->div(100);
+            velocity->add(c);
+        }
     }
 
     void keepDistance(vector<Boid *> boids)
@@ -166,17 +171,22 @@ public:
     void matchVelocity(vector<Boid *> boids)
     {
         Vec2 *v = new Vec2(0, 0);
+        int n = 0;
         for (Boid *other : boids)
         {
-            if (other->id != id)
+            if (other->id != id && position->dist(other->position) <= LOCAL_RANGE)
             {
                 v->add(other->velocity);
+                n++;
             }
         }
-        v->div(boids.size() - 1);
-        v->sub(velocity);
-        v->div(8);
-        velocity->add(v);
+        if (n != 0)
+        {
+            v->div(n);
+            v->sub(velocity);
+            v->div(8);
+            velocity->add(v);
+        }
     }
 
     void limitVelocity()

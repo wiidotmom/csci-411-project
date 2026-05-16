@@ -72,15 +72,6 @@ public:
         y /= scalar;
     }
 
-    void invertX()
-    {
-        x *= -1;
-    }
-    void invertY()
-    {
-        y *= -1;
-    }
-
     float dist(Vec2 *other)
     {
         return sqrt(pow((x - other->x), 2) + pow(y - other->y, 2));
